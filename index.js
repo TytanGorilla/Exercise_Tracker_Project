@@ -10,8 +10,8 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/index.html')
 });
 
-app.get('/', (req, res) => {
-  res.send('Hello, World!');
+app.get('/hello', (req, res) => {
+  console.log('Hello World!');
 });
 
 
