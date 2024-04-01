@@ -2,9 +2,10 @@
 	"name": "fcc-exercise-tracker",
 	"version": "0.1.0",
 	"description": "A REST API project, part of Free Code Camp's curriculum",
+	"author": "Tyrone Wessels with Free Code Camp boilerplate",
 	"main": "index.js",
 	"scripts": {
-		"start": "node index.js"
+		"start": "node --watch index.js"
 	},
 	"dependencies": {
 		"dotenv": "^8.2.0",
