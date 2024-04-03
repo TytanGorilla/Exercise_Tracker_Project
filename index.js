@@ -18,6 +18,11 @@ const Exercise_Schema = new Schema
     duration: Number,
     date: String
   })
+//Define a virtual property for Exercise_Schema.formattedDate
+Exercise_Schema.virtual('formattedDate').get(function () {
+  return this.date ? this.date.toDateString() : null;
+})
+
 //2) User Schema
 const User_Schema = new Schema({
   username: String
@@ -34,6 +39,10 @@ const Log_Schema = new Schema
       date: String
     }]
   })
+//Define a virtual property for Log_Schema.formattedDate
+Log_Schema.virtual('formattedDate').get(function () {
+  return this.date ? this.date.toDateString() : null;
+})
 
 //Compile the Schemas into respective models
 const Exercise = mongoose.model('Exercise', Exercise_Schema);
