@@ -3,10 +3,49 @@ const app = express();
 const cors = require('cors')
 require('dotenv').config()
 const mongoose = require('mongoose')
+const Schema = mongoose.Schema;
 
 mongoose.connect(process.env.MONGO_URI, {})
   .then(() => console.log('Connected to MongoDB'))
   .catch((err) => console.error('Error connecting to MongoDB:', err));
+
+//Define the following Schema: Exercise, user, log
+//1) Exercise Schema
+const Exercise_Schema = new Schema
+  ({
+    username: String,
+    description: String,
+    duration: Number,
+    date: String
+  })
+//2) User Schema
+const User_Schema = new Schema({
+  username: String
+})
+//3) Log Schema
+const Log_Schema = new Schema
+  ({
+    username: String,
+    count: Number,
+    duration: Number,
+    log: [{
+      description: String,
+      duration: Number,
+      date: String
+    }]
+  })
+
+//Compile the Schemas into respective models
+const Exercise = mongoose.model('Exercise', Exercise_Schema);
+const User = mongoose.model('User', User_Schema);
+const Log = mongoose.model('Log', Log_Schema);
+
+//Export Modules
+module.exports = {
+  Exercise,
+  User,
+  Log
+}
 
 app.use(cors())
 app.use(express.static('public'))
