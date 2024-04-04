@@ -4,6 +4,8 @@ const cors = require('cors')
 require('dotenv').config()
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema;
+const bodyParser = require('body-parser')
+
 
 mongoose.connect(process.env.MONGO_URI, {})
   .then(() => console.log('Connected to MongoDB'))
@@ -56,6 +58,13 @@ module.exports = {
   Log
 }
 
+//Middleware Body parser
+// Parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }));
+
+// Parse application/json
+app.use(bodyParser.json());
+
 app.use(cors())
 app.use(express.static('public'))
 app.get('/', (req, res) => {
@@ -66,6 +75,34 @@ app.get('/hello', (req, res) => {
   console.log('Hello World!');
 });
 
+//Post Request to create a new user
+app.post('/api/users', async function (req, res) {
+  try {
+    let { username } = req.body
+    console.log(username);
+    //Save the username to the database
+    const user = new User({
+      username: username
+    })
+    await user.save()
+    // Log success message
+    console.log(`User: ${user} saved successfully`);
+
+    res.json(user)
+  } catch (err) {
+    console.log(`Error: ${err}`), console.log(err);
+  }
+})
+
+//Get Request to get a list of all users
+app.get('/api/users', async function (req, res) {
+  try {
+    const users = await User.find({})
+    res.json(users)
+  } catch (err) {
+    console.log(`Error: ${err}`), console.log(err);
+  }
+})
 
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log('Your app is listening on port ' + listener.address().port)
