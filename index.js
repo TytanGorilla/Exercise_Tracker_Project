@@ -13,7 +13,8 @@ mongoose.connect(process.env.MONGO_URI, {})
 
 //Define the User Schema
 const User_Schema = new Schema({
-  username: String
+  username: String,
+  log: []
 })
 //Define an Exercise Schema
 const Exercise_Schema = new Schema({
@@ -29,7 +30,8 @@ const Exercise = mongoose.model('Exercise', Exercise_Schema);
 
 //Export Modules
 module.exports = {
-  User
+  User,
+  Exercise
 }
 
 //Middleware Body parser
@@ -106,7 +108,7 @@ app.post('/api/users/:_id/exercises', async function (req, res) {
 
     // Find the user by _id
     let user = await User.findById(userId);
-    console.log(user);
+    //console.log(user);
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
@@ -119,16 +121,13 @@ app.post('/api/users/:_id/exercises', async function (req, res) {
       date: date ? formatDate(date) : formatDate(new Date()),
       userid: userId
     })
-    console.log(exercise);
-    // Save the exercise
+    //Save newly created exercise to database
     await exercise.save();
-
-    // Add description, duration, formatted(date 1999-12-12) to the user object
-
-    // Save the updated user object
+    //Insert exercise into log: []
+    user.log.push(exercise);
+    //Save user to database
     await user.save();
-    //console.log(`User: ${user} saved successfully`);
-
+    console.log(user);
     // Return the updated user object in the response
     res.json({
       username: user.username,
@@ -139,6 +138,64 @@ app.post('/api/users/:_id/exercises', async function (req, res) {
     });
   } catch (err) {
     console.error('Error adding exercise:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+//Get request /api/users/:_id/logs
+app.get('/api/users/:_id/logs', async (req, res) => {
+  try {
+    const userId = req.params._id;
+    const { from, to, limit } = req.query;
+
+
+    // Retrieve the user by ID
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Retrieve the exercise input that matches the user ID
+
+    let exercises = await Exercise.find({ userid: userId });
+    let counted = exercises.length;
+    //console.log(`These are the exercises ${exercises}`);
+    //Prepare for populating field values by using count & .length of the Log to ascertain number of exercises
+
+    // Filter exercise log based on 'from' and 'to' dates if provided
+    if (from && to) {
+      const fromDate = new Date(from);
+      const toDate = new Date(to);
+      exercises = exercises.filter(exercise => {
+        const exerciseDate = new Date(exercise.date);
+        return exerciseDate >= fromDate && exerciseDate <= toDate;
+      });
+    }
+
+    // Apply limit if provided
+    if (limit) {
+      exercises = exercises.slice(0, parseInt(limit));
+    }
+
+    //js array.map()
+    let logs = {
+      username: user.username,
+      count: counted,
+      _id: user.id,
+      log: exercises.map(exercise => ({
+        description: exercise.description,
+        duration: exercise.duration,
+        date: exercise.date
+      }))
+    };
+
+    console.log(logs)
+    // Return the updated user object in the response
+    res.json(logs);
+
+  } catch (err) {
+    console.error('Error retrieving exercise log:', err);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
